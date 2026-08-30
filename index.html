@@ -109,13 +109,8 @@
     background: var(--surface-2); display: flex; align-items: center; justify-content: center;
   }
   .card .thumb .emoji-placeholder{
-    font-size: 64px; opacity: 0.6; user-select: none;
+    font-size: 64px; opacity: 0.8; user-select: none;
   }
-  .card .thumb img{ 
-    width: 100%; height: 100%; object-fit: cover; display: block; 
-    transition: transform .5s ease; 
-  }
-  .card:hover .thumb img{ transform: scale(1.08); }
   .card .thumb::after{
     content: ""; position: absolute; inset: 0;
     background: linear-gradient(135deg, rgba(124,92,255,0.0) 40%, rgba(124,92,255,0.25) 100%);
@@ -167,7 +162,11 @@
   .cart-empty{ text-align: center; color: var(--muted); padding: 60px 10px; }
   .cart-empty .emoji{ font-size: 32px; display: block; margin-bottom: 10px; }
   .cart-item{ display: flex; gap: 12px; padding: 14px 0; border-bottom: 1px solid var(--border); }
-  .cart-item img{ width: 58px; height: 58px; border-radius: 10px; object-fit: cover; flex-shrink: 0; }
+  .cart-item .thumb{ 
+    width:58px; height:58px; border-radius:10px; 
+    display:flex; align-items:center; justify-content:center; 
+    font-size:28px; flex-shrink:0; background: var(--surface-2);
+  }
   .cart-item .ci-info{ flex: 1; min-width: 0; }
   .cart-item .ci-name{
     font-size: 13.5px; font-weight: 600; font-family: 'Space Grotesk', sans-serif;
@@ -277,130 +276,160 @@
 <div class="toast" id="toast"></div>
 
 <script>
-  // ===== DỮ LIỆU SẢN PHẨM =====
-  const PRODUCTS = [
-    { id: 1, name: "Sự tự tin buổi sáng", tag: "Cảm xúc / dùng 1 lần", price: 49000, emoji: "☀️" },
-    { id: 2, name: "Ổ cứng chứa deadline đã qua", tag: "Kỷ niệm số", price: 129000, emoji: "💾" },
-    { id: 3, name: "Gói Wifi trong mơ - 5G ảo", tag: "Hạ tầng tưởng tượng", price: 89000, emoji: "📡" },
-    { id: 4, name: "Vé xem hoàng hôn hạng VIP", tag: "Trải nghiệm", price: 199000, emoji: "🌅" },
-    { id: 5, name: "1kg động lực nguyên chất", tag: "Tinh thần / hữu cơ", price: 159000, emoji: "🚀" },
-    { id: 6, name: "Chứng chỉ 'Đã cố gắng hết sức'", tag: "Giấy tờ ảo", price: 39000, emoji: "📜" },
-    { id: 7, name: "Không gian yên tĩnh, đóng gói kín", tag: "Nội thất phi vật lý", price: 219000, emoji: "🧘" },
-    { id: 8, name: "Bản sao giấc ngủ 8 tiếng", tag: "Sức khỏe ảo", price: 99000, emoji: "💤" }
-  ];
+// ============================================
+// DỮ LIỆU
+// ============================================
+var PRODUCTS = [
+  { id: 1, name: "Sự tự tin buổi sáng", tag: "Cảm xúc / dùng 1 lần", price: 49000, emoji: "☀️" },
+  { id: 2, name: "Ổ cứng chứa deadline đã qua", tag: "Kỷ niệm số", price: 129000, emoji: "💾" },
+  { id: 3, name: "Gói Wifi trong mơ - 5G ảo", tag: "Hạ tầng tưởng tượng", price: 89000, emoji: "📡" },
+  { id: 4, name: "Vé xem hoàng hôn hạng VIP", tag: "Trải nghiệm", price: 199000, emoji: "🌅" },
+  { id: 5, name: "1kg động lực nguyên chất", tag: "Tinh thần / hữu cơ", price: 159000, emoji: "🚀" },
+  { id: 6, name: "Chứng chỉ 'Đã cố gắng hết sức'", tag: "Giấy tờ ảo", price: 39000, emoji: "📜" },
+  { id: 7, name: "Không gian yên tĩnh, đóng gói kín", tag: "Nội thất phi vật lý", price: 219000, emoji: "🧘" },
+  { id: 8, name: "Bản sao giấc ngủ 8 tiếng", tag: "Sức khỏe ảo", price: 99000, emoji: "💤" }
+];
 
-  let cart = {};
+var cart = {};
 
-  // ===== DOM REFS =====
-  const grid = document.getElementById('productGrid');
-  const searchInput = document.getElementById('searchInput');
-  const resultCount = document.getElementById('resultCount');
-  const cartCount = document.getElementById('cartCount');
-  const cartBody = document.getElementById('cartBody');
-  const cartTotal = document.getElementById('cartTotal');
-  const cartBtn = document.getElementById('cartBtn');
-  const closeCart = document.getElementById('closeCart');
-  const overlay = document.getElementById('overlay');
-  const cartModal = document.getElementById('cartModal');
-  const checkoutBtn = document.getElementById('checkoutBtn');
-  const toast = document.getElementById('toast');
+// ============================================
+// LẤY PHẦN TỬ
+// ============================================
+var grid = document.getElementById('productGrid');
+var searchInput = document.getElementById('searchInput');
+var resultCount = document.getElementById('resultCount');
+var cartCount = document.getElementById('cartCount');
+var cartBody = document.getElementById('cartBody');
+var cartTotal = document.getElementById('cartTotal');
+var cartBtn = document.getElementById('cartBtn');
+var closeCart = document.getElementById('closeCart');
+var overlay = document.getElementById('overlay');
+var cartModal = document.getElementById('cartModal');
+var checkoutBtn = document.getElementById('checkoutBtn');
+var toast = document.getElementById('toast');
 
-  // ===== HELPERS =====
-  function formatVND(n){ return n.toLocaleString('vi-VN') + '₫'; }
+// ============================================
+// HÀM TIỆN ÍCH
+// ============================================
+function formatVND(n) {
+  return n.toLocaleString('vi-VN') + '₫';
+}
 
-  function getColorFromId(id){
-    const colors = ['#7C5CFF', '#FF6FD8', '#5CE1FF', '#FFB347', '#50C878', '#FF6B6B', '#4ECDC4', '#A78BFA'];
-    return colors[(id - 1) % colors.length];
+function getColor(id) {
+  var colors = ['#7C5CFF', '#FF6FD8', '#5CE1FF', '#FFB347', '#50C878', '#FF6B6B', '#4ECDC4', '#A78BFA'];
+  return colors[(id - 1) % colors.length];
+}
+
+// ============================================
+// HIỂN THỊ SẢN PHẨM
+// ============================================
+function renderProducts(list) {
+  console.log('Đang hiển thị', list.length, 'sản phẩm');
+  
+  if (list.length === 0) {
+    grid.innerHTML = '<div class="no-results"><span class="emoji">🌫️</span>Không tìm thấy gì cả — có lẽ nó ảo thật rồi.</div>';
+    resultCount.textContent = '0';
+    return;
   }
-
-  // ===== RENDER SẢN PHẨM =====
-  function renderProducts(list){
-    if(list.length === 0){
-      grid.innerHTML = `<div class="no-results"><span class="emoji">🌫️</span>Không tìm thấy gì cả — có lẽ nó ảo thật rồi.</div>`;
-      resultCount.textContent = 0;
-      return;
-    }
-    resultCount.textContent = list.length;
-    grid.innerHTML = list.map(p => {
-      const bgColor = getColorFromId(p.id);
-      return `
-        <div class="card" data-id="${p.id}">
-          <span class="badge">ảo</span>
-          <div class="thumb" style="background: ${bgColor}33;">
-            <span class="emoji-placeholder">${p.emoji}</span>
-          </div>
-          <div class="info">
-            <div class="name">${p.name}</div>
-            <div class="tag">${p.tag}</div>
-            <div class="price">${formatVND(p.price)}</div>
-            <button class="add-btn" data-id="${p.id}">
-              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"/></svg>
-              Thêm vào giỏ
-            </button>
-          </div>
+  
+  resultCount.textContent = list.length;
+  
+  var html = '';
+  for (var i = 0; i < list.length; i++) {
+    var p = list[i];
+    var bgColor = getColor(p.id);
+    html += `
+      <div class="card" data-id="${p.id}">
+        <span class="badge">ảo</span>
+        <div class="thumb" style="background: ${bgColor}33;">
+          <span class="emoji-placeholder">${p.emoji}</span>
         </div>
-      `;
-    }).join('');
-  }
-
-  // ===== FILTER =====
-  function filterProducts(){
-    const q = searchInput.value.trim().toLowerCase();
-    const filtered = PRODUCTS.filter(p => 
-      p.name.toLowerCase().includes(q) || 
-      p.tag.toLowerCase().includes(q) ||
-      p.emoji.includes(q)
-    );
-    renderProducts(filtered);
-  }
-
-  // ===== CART UI =====
-  function updateCartUI(){
-    const ids = Object.keys(cart).filter(id => cart[id] > 0);
-    const totalQty = ids.reduce((sum, id) => sum + cart[id], 0);
-    cartCount.textContent = totalQty;
-
-    if(ids.length === 0){
-      cartBody.innerHTML = `<div class="cart-empty"><span class="emoji">🛒</span>Giỏ hàng đang trống rỗng — như mọi thứ ở đây.</div>`;
-      cartTotal.textContent = formatVND(0);
-      checkoutBtn.disabled = true;
-      return;
-    }
-
-    checkoutBtn.disabled = false;
-    let total = 0;
-    cartBody.innerHTML = ids.map(id => {
-      const p = PRODUCTS.find(x => x.id === Number(id));
-      const qty = cart[id];
-      const subtotal = p.price * qty;
-      total += subtotal;
-      return `
-        <div class="cart-item" data-id="${p.id}">
-          <div class="thumb" style="width:58px;height:58px;border-radius:10px;background:${getColorFromId(p.id)}33;display:flex;align-items:center;justify-content:center;font-size:28px;flex-shrink:0;">${p.emoji}</div>
-          <div class="ci-info">
-            <div class="ci-name">${p.name}</div>
-            <div class="ci-price">${formatVND(p.price)} × ${qty} = ${formatVND(subtotal)}</div>
-            <div class="qty-ctrl">
-              <button class="qty-minus" data-id="${p.id}">−</button>
-              <span>${qty}</span>
-              <button class="qty-plus" data-id="${p.id}">+</button>
-            </div>
-          </div>
-          <button class="ci-remove" data-id="${p.id}" aria-label="Xóa">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/></svg>
+        <div class="info">
+          <div class="name">${p.name}</div>
+          <div class="tag">${p.tag}</div>
+          <div class="price">${formatVND(p.price)}</div>
+          <button class="add-btn" data-id="${p.id}">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"/></svg>
+            Thêm vào giỏ
           </button>
         </div>
-      `;
-    }).join('');
-    cartTotal.textContent = formatVND(total);
+      </div>
+    `;
+  }
+  
+  grid.innerHTML = html;
+}
+
+// ============================================
+// LỌC SẢN PHẨM
+// ============================================
+function filterProducts() {
+  var q = searchInput.value.trim().toLowerCase();
+  var filtered = [];
+  for (var i = 0; i < PRODUCTS.length; i++) {
+    var p = PRODUCTS[i];
+    if (p.name.toLowerCase().indexOf(q) !== -1 || 
+        p.tag.toLowerCase().indexOf(q) !== -1 ||
+        p.emoji.indexOf(q) !== -1) {
+      filtered.push(p);
+    }
+  }
+  renderProducts(filtered);
+}
+
+// ============================================
+// CẬP NHẬT GIỎ HÀNG
+// ============================================
+function updateCartUI() {
+  var ids = Object.keys(cart);
+  var totalQty = 0;
+  for (var i = 0; i < ids.length; i++) {
+    if (cart[ids[i]] > 0) {
+      totalQty += cart[ids[i]];
+    }
+  }
+  cartCount.textContent = totalQty;
+
+  if (ids.length === 0) {
+    cartBody.innerHTML = '<div class="cart-empty"><span class="emoji">🛒</span>Giỏ hàng đang trống rỗng — như mọi thứ ở đây.</div>';
+    cartTotal.textContent = formatVND(0);
+    checkoutBtn.disabled = true;
+    return;
   }
 
-  // ===== TOAST =====
-  function showToast(msg){
-    toast.textContent = msg;
-    toast.classList.add('show');
-    clearTimeout(toast._timer);
-    toast._timer = setTimeout(() => toast.classList.remove('show'), 2200);
-  }
-
-  // ===== MỞ / ĐÓNG GIỎ HÀNG
+  checkoutBtn.disabled = false;
+  var total = 0;
+  var html = '';
+  
+  for (var i = 0; i < ids.length; i++) {
+    var id = ids[i];
+    var qty = cart[id];
+    if (qty <= 0) continue;
+    
+    var p = null;
+    for (var j = 0; j < PRODUCTS.length; j++) {
+      if (PRODUCTS[j].id === Number(id)) {
+        p = PRODUCTS[j];
+        break;
+      }
+    }
+    if (!p) continue;
+    
+    var subtotal = p.price * qty;
+    total += subtotal;
+    var bgColor = getColor(p.id);
+    
+    html += `
+      <div class="cart-item" data-id="${p.id}">
+        <div class="thumb" style="background: ${bgColor}33;">${p.emoji}</div>
+        <div class="ci-info">
+          <div class="ci-name">${p.name}</div>
+          <div class="ci-price">${formatVND(p.price)} × ${qty} = ${formatVND(subtotal)}</div>
+          <div class="qty-ctrl">
+            <button class="qty-minus" data-id="${p.id}">−</button>
+            <span>${qty}</span>
+            <button class="qty-plus" data-id="${p.id}">+</button>
+          </div>
+        </div>
+        <button class="ci-remove" data-id="${p.id}" aria-label="Xóa">
+          <svg viewBox="0 0 24 24" fill
