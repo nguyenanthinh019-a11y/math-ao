@@ -1,0 +1,390 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ẢO — Chợ đồ ảo cho đời thực</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg: #120E28;
+    --surface: #1C1740;
+    --surface-2: #221C4C;
+    --border: #35306B;
+    --text: #F2F0FA;
+    --muted: #9C93C4;
+    --violet: #7C5CFF;
+    --pink: #FF6FD8;
+    --cyan: #5CE1FF;
+    --gradient: linear-gradient(115deg, var(--violet) 0%, var(--pink) 50%, var(--cyan) 100%);
+    --radius: 16px;
+    --shadow: 0 20px 50px -20px rgba(124, 92, 255, 0.35);
+  }
+  *{ box-sizing: border-box; }
+  html{ scroll-behavior: smooth; }
+  body{
+    margin: 0;
+    background:
+      radial-gradient(1200px 600px at 10% -10%, rgba(124,92,255,0.25), transparent 60%),
+      radial-gradient(900px 500px at 100% 0%, rgba(255,111,216,0.15), transparent 55%),
+      var(--bg);
+    color: var(--text);
+    font-family: 'Inter', sans-serif;
+    min-height: 100vh;
+    -webkit-font-smoothing: antialiased;
+  }
+  ::selection{ background: var(--violet); color: white; }
+  .mono{ font-family: 'JetBrains Mono', monospace; }
+  a, button{ font-family: inherit; }
+  header{
+    position: sticky; top: 0; z-index: 50;
+    display: flex; align-items: center; gap: 20px;
+    padding: 14px 28px;
+    background: rgba(18, 14, 40, 0.72);
+    backdrop-filter: blur(16px) saturate(140%);
+    -webkit-backdrop-filter: blur(16px) saturate(140%);
+    border-bottom: 1px solid var(--border);
+  }
+  .logo{
+    font-family: 'Space Grotesk', sans-serif;
+    font-weight: 700; font-size: 26px; letter-spacing: 1px;
+    background: var(--gradient); background-size: 200% 200%;
+    -webkit-background-clip: text; background-clip: text; color: transparent;
+    animation: shimmer 6s ease infinite;
+    white-space: nowrap; cursor: default; flex-shrink: 0;
+  }
+  .logo sup{
+    font-family: 'JetBrains Mono', monospace; font-size: 10px;
+    -webkit-text-fill-color: var(--muted); color: var(--muted);
+    letter-spacing: 0; margin-left: 4px; font-weight: 400; vertical-align: super;
+  }
+  @keyframes shimmer{ 0%{background-position:0% 50%;} 50%{background-position:100% 50%;} 100%{background-position:0% 50%;} }
+  .search-wrap{ flex: 1; display: flex; justify-content: center; }
+  .search-box{ position: relative; width: 100%; max-width: 480px; }
+  .search-box input{
+    width: 100%; padding: 11px 44px 11px 16px; border-radius: 999px;
+    border: 1px solid var(--border); background: var(--surface); color: var(--text);
+    font-size: 14px; outline: none; transition: border-color .2s, box-shadow .2s;
+  }
+  .search-box input::placeholder{ color: var(--muted); }
+  .search-box input:focus{ border-color: var(--violet); box-shadow: 0 0 0 4px rgba(124,92,255,0.18); }
+  .search-box svg{ position: absolute; right: 15px; top: 50%; transform: translateY(-50%); width: 17px; height: 17px; stroke: var(--muted); pointer-events: none; }
+  .cart-btn{
+    position: relative; display: flex; align-items: center; justify-content: center;
+    width: 42px; height: 42px; border-radius: 50%;
+    background: var(--surface); border: 1px solid var(--border);
+    cursor: pointer; flex-shrink: 0; transition: transform .15s, border-color .2s;
+  }
+  .cart-btn:hover{ transform: translateY(-2px); border-color: var(--violet); }
+  .cart-btn svg{ width: 20px; height: 20px; stroke: var(--text); }
+  .cart-count{
+    position: absolute; top: -5px; right: -5px; min-width: 19px; height: 19px; padding: 0 4px;
+    border-radius: 999px; background: var(--gradient); color: #14102B;
+    font-size: 11px; font-weight: 700; display: flex; align-items: center; justify-content: center;
+    font-family: 'JetBrains Mono', monospace;
+  }
+  .hero{ padding: 64px 28px 40px; text-align: center; max-width: 720px; margin: 0 auto; }
+  .hero .eyebrow{ font-family: 'JetBrains Mono', monospace; font-size: 12px; letter-spacing: 3px; color: var(--cyan); text-transform: uppercase; }
+  .hero h1{ font-family: 'Space Grotesk', sans-serif; font-size: clamp(28px, 5vw, 42px); line-height: 1.15; margin: 14px 0 12px; }
+  .hero p{ color: var(--muted); font-size: 15px; line-height: 1.6; margin: 0; }
+  main{ max-width: 1200px; margin: 0 auto; padding: 20px 28px 100px; }
+  .grid-meta{ display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 18px; color: var(--muted); font-size: 13px; }
+  #resultCount{ font-family: 'JetBrains Mono', monospace; color: var(--text); }
+  .grid{ display: grid; grid-template-columns: repeat(auto-fill, minmax(230px, 1fr)); gap: 22px; }
+  .card{
+    background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius);
+    overflow: hidden; display: flex; flex-direction: column; position: relative;
+    transition: transform .25s ease, box-shadow .25s ease, border-color .25s ease;
+  }
+  .card:hover{ transform: translateY(-6px); box-shadow: var(--shadow); border-color: var(--violet); }
+  .card .badge{
+    position: absolute; top: 12px; left: 12px; background: rgba(18,14,40,0.75);
+    backdrop-filter: blur(6px); border: 1px solid var(--border); color: var(--cyan);
+    font-family: 'JetBrains Mono', monospace; font-size: 10px; letter-spacing: 1px;
+    padding: 4px 9px; border-radius: 999px; text-transform: uppercase; z-index: 2;
+  }
+  .card .thumb{ position: relative; width: 100%; aspect-ratio: 4/3; overflow: hidden; background: var(--surface-2); }
+  .card .thumb img{ width: 100%; height: 100%; object-fit: cover; display: block; transition: transform .5s ease; }
+  .card:hover .thumb img{ transform: scale(1.08); }
+  .card .thumb::after{
+    content: ""; position: absolute; inset: 0;
+    background: linear-gradient(135deg, rgba(124,92,255,0.0) 40%, rgba(124,92,255,0.25) 100%);
+    opacity: 0; transition: opacity .3s;
+  }
+  .card:hover .thumb::after{ opacity: 1; }
+  .card .info{ padding: 16px; display: flex; flex-direction: column; gap: 8px; flex: 1; }
+  .card .name{ font-family: 'Space Grotesk', sans-serif; font-weight: 600; font-size: 15.5px; line-height: 1.35; }
+  .card .tag{ color: var(--muted); font-size: 12px; }
+  .card .price{
+    margin-top: auto; font-family: 'JetBrains Mono', monospace; font-size: 17px; font-weight: 500;
+    background: var(--gradient); -webkit-background-clip: text; background-clip: text; color: transparent; padding-top: 4px;
+  }
+  .add-btn{
+    margin-top: 6px; width: 100%; padding: 10px; border-radius: 10px;
+    border: 1px solid var(--border); background: var(--surface-2); color: var(--text);
+    font-size: 13.5px; font-weight: 600; cursor: pointer;
+    transition: background .2s, border-color .2s, transform .1s;
+    display: flex; align-items: center; justify-content: center; gap: 6px;
+  }
+  .add-btn:hover{ border-color: var(--violet); background: #2a2364; }
+  .add-btn:active{ transform: scale(0.97); }
+  .add-btn.added{ background: var(--gradient); border-color: transparent; color: #14102B; }
+  .no-results{ grid-column: 1/-1; text-align: center; padding: 60px 20px; color: var(--muted); }
+  .no-results .emoji{ font-size: 34px; display:block; margin-bottom: 10px; }
+  .overlay{
+    position: fixed; inset: 0; background: rgba(10, 8, 24, 0.6);
+    backdrop-filter: blur(3px); z-index: 90; opacity: 0; pointer-events: none; transition: opacity .25s ease;
+  }
+  .overlay.open{ opacity: 1; pointer-events: all; }
+  .cart-modal{
+    position: fixed; top: 0; right: 0; height: 100%; width: 100%; max-width: 400px;
+    background: var(--surface); border-left: 1px solid var(--border); z-index: 91;
+    display: flex; flex-direction: column; transform: translateX(100%);
+    transition: transform .3s cubic-bezier(.32,.72,0,1);
+  }
+  .cart-modal.open{ transform: translateX(0); }
+  .cart-head{ padding: 20px 22px; border-bottom: 1px solid var(--border); display: flex; align-items: center; justify-content: space-between; }
+  .cart-head h2{ font-family: 'Space Grotesk', sans-serif; font-size: 19px; margin: 0; }
+  .close-btn{
+    background: none; border: none; color: var(--muted); cursor: pointer;
+    width: 30px; height: 30px; border-radius: 50%; display: flex; align-items:center; justify-content:center;
+    transition: background .2s, color .2s;
+  }
+  .close-btn:hover{ background: var(--surface-2); color: var(--text); }
+  .close-btn svg{ width: 18px; height: 18px; }
+  .cart-body{ flex: 1; overflow-y: auto; padding: 10px 22px; }
+  .cart-empty{ text-align: center; color: var(--muted); padding: 60px 10px; }
+  .cart-empty .emoji{ font-size: 32px; display: block; margin-bottom: 10px; }
+  .cart-item{ display: flex; gap: 12px; padding: 14px 0; border-bottom: 1px solid var(--border); }
+  .cart-item img{ width: 58px; height: 58px; border-radius: 10px; object-fit: cover; flex-shrink: 0; }
+  .cart-item .ci-info{ flex: 1; min-width: 0; }
+  .cart-item .ci-name{
+    font-size: 13.5px; font-weight: 600; font-family: 'Space Grotesk', sans-serif;
+    white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+  }
+  .cart-item .ci-price{ font-family: 'JetBrains Mono', monospace; font-size: 12.5px; color: var(--muted); margin-top: 3px; }
+  .qty-ctrl{ display: flex; align-items: center; gap: 8px; margin-top: 8px; }
+  .qty-ctrl button{
+    width: 22px; height: 22px; border-radius: 6px; border: 1px solid var(--border);
+    background: var(--surface-2); color: var(--text); cursor: pointer; font-size: 14px; line-height: 1;
+    display: flex; align-items:center; justify-content:center;
+  }
+  .qty-ctrl button:hover{ border-color: var(--violet); }
+  .qty-ctrl span{ font-family: 'JetBrains Mono', monospace; font-size: 13px; min-width: 14px; text-align:center; }
+  .ci-remove{ background: none; border: none; color: var(--muted); cursor: pointer; align-self: flex-start; padding: 4px; transition: color .2s; }
+  .ci-remove:hover{ color: var(--pink); }
+  .ci-remove svg{ width: 16px; height: 16px; }
+  .cart-footer{ padding: 18px 22px 22px; border-top: 1px solid var(--border); }
+  .cart-total{ display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 14px; }
+  .cart-total .label{ color: var(--muted); font-size: 13px; }
+  .cart-total .amount{
+    font-family: 'JetBrains Mono', monospace; font-size: 21px; font-weight: 500;
+    background: var(--gradient); -webkit-background-clip: text; background-clip: text; color: transparent;
+  }
+  .checkout-btn{
+    width: 100%; padding: 14px; border: none; border-radius: 12px;
+    background: var(--gradient); background-size: 200% 200%; color: #14102B;
+    font-weight: 700; font-size: 14.5px; cursor: pointer;
+    transition: background-position .4s, transform .1s;
+  }
+  .checkout-btn:hover{ background-position: 100% 0; }
+  .checkout-btn:active{ transform: scale(0.98); }
+  .checkout-btn:disabled{ opacity: 0.4; cursor: not-allowed; }
+  .toast{
+    position: fixed; bottom: 26px; left: 50%; transform: translateX(-50%) translateY(20px);
+    background: var(--surface-2); border: 1px solid var(--violet); color: var(--text);
+    padding: 13px 22px; border-radius: 12px; font-size: 13.5px; z-index: 120;
+    opacity: 0; pointer-events: none; transition: opacity .25s, transform .25s;
+    box-shadow: var(--shadow); display: flex; align-items: center; gap: 8px;
+  }
+  .toast.show{ opacity: 1; transform: translateX(-50%) translateY(0); }
+  footer{ text-align: center; padding: 30px 20px 40px; color: var(--muted); font-size: 12px; border-top: 1px solid var(--border); }
+  footer span{ color: var(--cyan); font-family: 'JetBrains Mono', monospace; }
+  @media (max-width: 640px){
+    header{ flex-wrap: wrap; padding: 12px 16px; }
+    .logo{ order: 1; }
+    .cart-btn{ order: 2; margin-left: auto; }
+    .search-wrap{ order: 3; width: 100%; }
+    .hero{ padding: 40px 20px 28px; }
+    .cart-modal{ max-width: 100%; }
+  }
+  @media (prefers-reduced-motion: reduce){ *{ animation: none !important; transition: none !important; } }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="logo">ẢO<sup>beta</sup></div>
+  <div class="search-wrap">
+    <div class="search-box">
+      <input id="searchInput" type="text" placeholder="Tìm một thứ gì đó không có thật...">
+      <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+    </div>
+  </div>
+  <button class="cart-btn" id="cartBtn" aria-label="Giỏ hàng">
+    <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"/></svg>
+    <span class="cart-count" id="cartCount">0</span>
+  </button>
+</header>
+
+<section class="hero">
+  <div class="eyebrow">100% phi vật thể</div>
+  <h1>Mua những thứ chẳng ai cầm được, nhưng ai cũng muốn có.</h1>
+  <p>Không giao hàng. Không hoàn tiền. Không tồn kho thật. Chỉ có cảm giác sở hữu — và đó mới là thứ đắt giá nhất.</p>
+</section>
+
+<main>
+  <div class="grid-meta">
+    <span><span id="resultCount">8</span> sản phẩm ảo đang chờ bạn</span>
+    <span class="mono">phiên bản: demo.01</span>
+  </div>
+  <div class="grid" id="productGrid"></div>
+</main>
+
+<footer>
+  Được dựng bằng mã ảo, chạy trên máy thật. <span>ẢO © 2026</span>
+</footer>
+
+<div class="overlay" id="overlay"></div>
+<aside class="cart-modal" id="cartModal">
+  <div class="cart-head">
+    <h2>Giỏ hàng ảo</h2>
+    <button class="close-btn" id="closeCart" aria-label="Đóng">
+      <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+    </button>
+  </div>
+  <div class="cart-body" id="cartBody"></div>
+  <div class="cart-footer">
+    <div class="cart-total">
+      <span class="label">Tổng cộng (ảo)</span>
+      <span class="amount mono" id="cartTotal">0₫</span>
+    </div>
+    <button class="checkout-btn" id="checkoutBtn">Thanh toán ảo</button>
+  </div>
+</aside>
+
+<div class="toast" id="toast"></div>
+
+<script>
+  const PRODUCTS = [
+    { id: 1, name: "Sự tự tin buổi sáng", tag: "Cảm xúc / dùng 1 lần", price: 49000, img: "https://picsum.photos/seed/ao-sunrise/400/300" },
+    { id: 2, name: "Ổ cứng chứa deadline đã qua", tag: "Kỷ niệm số", price: 129000, img: "https://picsum.photos/seed/ao-laptop/400/300" },
+    { id: 3, name: "Gói Wifi trong mơ - 5G ảo", tag: "Hạ tầng tưởng tượng", price: 89000, img: "https://picsum.photos/seed/ao-wifi/400/300" },
+    { id: 4, name: "Vé xem hoàng hôn hạng VIP", tag: "Trải nghiệm", price: 199000, img: "https://picsum.photos/seed/ao-sunset/400/300" },
+    { id: 5, name: "1kg động lực nguyên chất", tag: "Tinh thần / hữu cơ", price: 159000, img: "https://picsum.photos/seed/ao-mountain/400/300" },
+    { id: 6, name: "Chứng chỉ 'Đã cố gắng hết sức'", tag: "Giấy tờ ảo", price: 39000, img: "https://picsum.photos/seed/ao-certificate/400/300" },
+    { id: 7, name: "Không gian yên tĩnh, đóng gói kín", tag: "Nội thất phi vật lý", price: 219000, img: "https://picsum.photos/seed/ao-room/400/300" },
+    { id: 8, name: "Bản sao giấc ngủ 8 tiếng", tag: "Sức khỏe ảo", price: 99000, img: "https://picsum.photos/seed/ao-sleep/400/300" }
+  ];
+
+  let cart = {};
+
+  const grid = document.getElementById('productGrid');
+  const searchInput = document.getElementById('searchInput');
+  const resultCount = document.getElementById('resultCount');
+  const cartCount = document.getElementById('cartCount');
+  const cartBody = document.getElementById('cartBody');
+  const cartTotal = document.getElementById('cartTotal');
+  const cartBtn = document.getElementById('cartBtn');
+  const closeCart = document.getElementById('closeCart');
+  const overlay = document.getElementById('overlay');
+  const cartModal = document.getElementById('cartModal');
+  const checkoutBtn = document.getElementById('checkoutBtn');
+  const toast = document.getElementById('toast');
+
+  function formatVND(n){ return n.toLocaleString('vi-VN') + '₫'; }
+
+  function renderProducts(list){
+    if(list.length === 0){
+      grid.innerHTML = `<div class="no-results"><span class="emoji">🌫️</span>Không tìm thấy gì cả — có lẽ nó ảo thật rồi.</div>`;
+      resultCount.textContent = 0;
+      return;
+    }
+    resultCount.textContent = list.length;
+    grid.innerHTML = list.map(p => `
+      <div class="card" data-id="${p.id}">
+        <span class="badge">ảo</span>
+        <div class="thumb"><img src="${p.img}" alt="${p.name}" loading="lazy"></div>
+        <div class="info">
+          <div class="name">${p.name}</div>
+          <div class="tag">${p.tag}</div>
+          <div class="price">${formatVND(p.price)}</div>
+          <button class="add-btn" data-id="${p.id}">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"/></svg>
+            Thêm vào giỏ
+          </button>
+        </div>
+      </div>
+    `).join('');
+  }
+
+  function filterProducts(){
+    const q = searchInput.value.trim().toLowerCase();
+    const filtered = PRODUCTS.filter(p => p.name.toLowerCase().includes(q) || p.tag.toLowerCase().includes(q));
+    renderProducts(filtered);
+  }
+
+  searchInput.addEventListener('input', filterProducts);
+
+  grid.addEventListener('click', (e) => {
+    const btn = e.target.closest('.add-btn');
+    if(!btn) return;
+    const id = Number(btn.dataset.id);
+    cart[id] = (cart[id] || 0) + 1;
+    updateCartUI();
+    showToast('Đã thêm vào giỏ hàng ảo');
+    btn.classList.add('added');
+    const original = btn.innerHTML;
+    btn.innerHTML = '✓ Đã thêm';
+    setTimeout(() => { btn.classList.remove('added'); btn.innerHTML = original; }, 900);
+  });
+
+  function updateCartUI(){
+    const ids = Object.keys(cart).filter(id => cart[id] > 0);
+    const totalQty = ids.reduce((sum, id) => sum + cart[id], 0);
+    cartCount.textContent = totalQty;
+
+    if(ids.length === 0){
+      cartBody.innerHTML = `<div class="cart-empty"><span class="emoji">🛒</span>Giỏ hàng đang trống rỗng — như mọi thứ ở đây.</div>`;
+      cartTotal.textContent = formatVND(0);
+      checkoutBtn.disabled = true;
+      return;
+    }
+
+    checkoutBtn.disabled = false;
+    let total = 0;
+    cartBody.innerHTML = ids.map(id => {
+      const p = PRODUCTS.find(x => x.id === Number(id));
+      const qty = cart[id];
+      const subtotal = p.price * qty;
+      total += subtotal;
+      return `
+        <div class="cart-item" data-id="${p.id}">
+          <img src="${p.img}" alt="${p.name}">
+          <div class="ci-info">
+            <div class="ci-name">${p.name}</div>
+            <div class="ci-price">${formatVND(p.price)} × ${qty} = ${formatVND(subtotal)}</div>
+            <div class="qty-ctrl">
+              <button class="qty-minus" data-id="${p.id}">−</button>
+              <span>${qty}</span>
+              <button class="qty-plus" data-id="${p.id}">+</button>
+            </div>
+          </div>
+          <button class="ci-remove" data-id="${p.id}" aria-label="Xóa">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/></svg>
+          </button>
+        </div>
+      `;
+    }).join('');
+    cartTotal.textContent = formatVND(total);
+  }
+
+  cartBody.addEventListener('click', (e) => {
+    const id = e.target.closest('[data-id]')?.dataset.id;
+    if(!id) return;
+    if(e.target.closest('.qty-plus')){ cart[id]++; }
+    else if(e.target.closest('.qty-minus')){ cart[id]--; if(cart[id] <= 0) delete cart[id]; }
+    else if(e.target.closest('.ci-remove')){ delete cart[id]; }
+    updateCartUI();
+  });
